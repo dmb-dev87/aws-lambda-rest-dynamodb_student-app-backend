@@ -1,0 +1,129 @@
+service: student-app-backend
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+  stage: dev
+  region: us-east-2
+
+functions:
+  create:
+    handler: students/create.create
+    events:
+      - http:
+          path: students
+          method: post
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Api-Key
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+
+  list:
+    handler: students/list.list
+    events:
+      - http:
+          path: students
+          method: get
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Api-Key
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+
+  get:
+    handler: students/get.get
+    events:
+      - http:
+          path: students/{id}
+          method: get
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Api-Key
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+
+  update:
+    handler: students/update.update
+    events:
+      - http:
+          path: students/{id}
+          method: put
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Api-Key
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+
+  delete:
+    handler: students/delete.delete
+    events:
+      - http:
+          path: students/{id}
+          method: delete
+          cors:
+            origins:
+              - '*'
+            headers:
+              - Content-Type
+              - X-Api-Key
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Credentials
+            allowCredentials: false
+
+resources:
+  Resources:
+    StudentsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
