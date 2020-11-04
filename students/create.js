@@ -8,14 +8,6 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 module.exports.create = (event, context, callback) => {
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
-  if (typeof data.student_name !== 'string') {
-    callback(null, {
-      statusCode: 400,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'Couldn\'t create the student item.',
-    });
-    return;
-  }
 
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
@@ -30,7 +22,6 @@ module.exports.create = (event, context, callback) => {
     },
   };
 
-  // write the todo to the database
   dynamoDb.put(params, (error) => {
     // handle potential errors
     if (error) {
@@ -47,8 +38,9 @@ module.exports.create = (event, context, callback) => {
     const response = {
       statusCode: 200,
       headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       },
       body: JSON.stringify(params.Item),
     };
